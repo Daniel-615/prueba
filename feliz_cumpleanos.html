@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Feliz Cumpleaños!</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: black;
+    }
+    canvas {
+      display: block;
+    }
+    #birthday-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 48px;
+      color: white;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="birthday-message">¡Feliz Cumpleaños!</div>
+  <canvas id="fireworks"></canvas>
+  <script>
+    const fireworksCanvas = document.getElementById('fireworks');
+    const ctx = fireworksCanvas.getContext('2d');
+
+    fireworksCanvas.width = window.innerWidth;
+    fireworksCanvas.height = window.innerHeight;
+
+    function random(min, max) {
+      return Math.random() * (max - min) + min;
+    }
+
+    function Firework() {
+      this.x = random(0, fireworksCanvas.width);
+      this.y = fireworksCanvas.height;
+      this.vx = random(-3, 3);
+      this.vy = random(-10, -5);
+      this.alpha = 1;
+      this.color = `rgb(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)})`;
+      this.sparkles = [];
+      this.sparklesCount = 100;
+
+      this.update = function() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.2;
+        this.alpha -= 0.01;
+
+        if (this.alpha <= 0) {
+          fireworks.splice(fireworks.indexOf(this), 1);
+          return;
+        }
+
+        for (let i = 0; i < this.sparklesCount; i++) {
+          this.sparkles.push({
+            x: this.x,
+            y: this.y,
+            vx: random(-1, 1),
+            vy: random(-1, 1),
+            alpha: 1,
+            color: `rgb(${random(0, 255)}, ${random(0, 255)}, ${random(0, 255)})`,
+            size: random(1, 3)
+          });
+        }
+
+        this.sparkles.forEach((sparkle, index) => {
+          sparkle.x += sparkle.vx;
+          sparkle.y += sparkle.vy;
+          sparkle.vy += 0.05;
+          sparkle.alpha -= 0.01;
+          if (sparkle.alpha <= 0) {
+            this.sparkles.splice(index, 1);
+          }
+        });
+      }
+
+      this.draw = function() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        this.sparkles.forEach(sparkle => {
+          ctx.globalAlpha = sparkle.alpha;
+          ctx.fillStyle = sparkle.color;
+          ctx.beginPath();
+          ctx.arc(sparkle.x, sparkle.y, sparkle.size, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+    }
+
+    const fireworks = [];
+
+    function createFirework() {
+      fireworks.push(new Firework());
+    }
+
+    setInterval(createFirework, 500);
+
+    function loop() {
+      ctx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height);
+      fireworks.forEach(firework => {
+        firework.update();
+        firework.draw();
+      });
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script>
+</body>
+</html>
